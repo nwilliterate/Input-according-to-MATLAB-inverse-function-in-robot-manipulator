@@ -14,6 +14,25 @@
 clc; clear all;
 addpath(genpath('.'));
 
+%
+inverse_type = 1;
+if inverse_type == 1
+    % using inverse function
+    file_name = "1.inv";
+elseif inverse_type == 2
+    % using Moore-Penrose pseudoinverse function
+    file_name = "2.pinv"; 
+elseif inverse_type == 3
+    % using mldivide, mrdivide function
+    file_name = "3.ml/mr-divide"; 
+elseif inverse_type == 4
+    % using round, mldivide, mrdivide function
+    file_name = "4.ml/mr-divide-round";
+elseif inverse_type == 0
+    % nothing
+    file_name = "0";
+end
+    
 % simulation setup
 sim_period = 0.001;
 t = 0:sim_period:10;
@@ -57,34 +76,34 @@ for i=1:sample_size
     for j=1:2
         tq(j) = e(j, i)./rho;
         ups(j) =  (1/(2*rho))*((1./(tq(j)+lower_kappa))-(1./(tq(j)-upper_kappa)));
-        % z(j) = (1/2)*log((lower_kappa + tq(j))./(upper_kappa - tq(j)));
     end
     ups_m = diag(ups);
+   
+    % input test
+    Ur(:,i) = G+C+F;  % real U_eq
     
+    % B matrix calculation according to the inverse function
+    if inverse_type == 1
+        B = inv(ups_m*inv(M))*(ups_m*inv(M));
+    elseif inverse_type == 2
+        ptol = 1e-14; % pinv function singular value tolerance 1e-14 
+        B = pinv(ups_m*pinv(M,ptol),ptol)*(ups_m*pinv(M,ptol));
+    elseif inverse_type == 3
+        B = (ups_m/(M))\(ups_m/M);
+    elseif inverse_type == 4
+        tol =14; % round function 1e-14
+        B = round((round(ups_m/M,tol))\(round(ups_m/M,tol)),tol);
+    elseif inverse_type == 0
+        B = eye(2);
+    end 
     
-    % input
-    % U(:,i) = (G+C+F) + kp*e(:,i) + kd*ed(:,i); % simple pid
-    % U(:,i) = (G+C+F)+L1*z'+L2*z_dot'; % simple ppc pid
-    % U(:,i) = ueq + (G+C+F)+L1*z'+L2*z_dot';
-    
-    tol =14;
-    ptol = 1e-6;
-    U_r(:,i) = G+C+F;  % real U_eq
-    % U(:,i) = (G+C+F)+(rand(2,1)*1e-16); % noise U_eq 
-    % U(:,i) = (ups_m/(M))\(ups_m/M)*(C+G+F); % using mldivide or mrdivide
-    U(:,i) = round((round(ups_m/M,tol))\(round(ups_m/M,tol)),tol)*(C+G+F); % using round and mldivide or mrdivide
-    % U(:,i) = inv(ups_m*inv(M))*(ups_m*inv(M))*(C+G+F); % using inverse
-    % U(:,i) = pinv(ups_m*pinv(M,ptol),ptol)*(ups_m*pinv(M,ptol))*(C+G+F); % using pinv 
+    U(:,i) = B*(G+C+F);
     
     % matrix test
-    % AA = inv(ups_m*inv(M))*(ups_m*inv(M));
-    % AA = (ups_m/(M))\(ups_m/M);%
-    AA = round((round(ups_m/M,tol))\(round(ups_m/M,tol)),tol);
-    % AA = pinv(ups_m*pinv(M,ptol),ptol)*(ups_m*pinv(M,ptol));
-    AA1(i) = AA(1);
-    AA2(i) = AA(2);
-    AA3(i) = AA(3);
-    AA4(i) = AA(4);
+    AA1(i) = B(1);
+    AA2(i) = B(2);
+    AA3(i) = B(3);
+    AA4(i) = B(4);
     
     % rk
     [next_state] = rk(x(:,i), U(:,i),sim_period);
@@ -93,6 +112,8 @@ for i=1:sample_size
     end
     rho_table(i) = rho;
 end
+
+mean(Ur(:,i)-U(:,i),2)
 
 % plot
 % figure 1 : q
@@ -112,7 +133,7 @@ for i=1:2
     grid on;
     legend('qd', 'q')
 end
-% saveas(gcf,"fig\q_result.png");
+saveas(gcf,"fig\"+file_name+"_q_result.png");
 
 % figure 2 : input
 figure(2)
@@ -128,34 +149,10 @@ for i=1:2
     grid on;
     legend('u')
 end
-saveas(gcf,"fig\u_result.png");
-% 
-% % figure 3 : z
-% figure(3)
-% tiledlayout(2,1,'TileSpacing','Compact','Padding','Compact');
-% set(gcf,'color','w');
-% for i=1:2
-%     ax = nexttile;
-%     hold off;
-%     plot(t,z_table(i,:),'-k','LineWidth',1.5');
-%     hold on;
-%     plot(t, -rho_table,':b','LineWidth',1.5');
-%     plot(t, rho_table,':b','LineWidth',1.5');
-%     % plot(t,z(i,:),'-k','LineWidth',1.5');
-%     plot(t, zeros(sample_size,1),':k','LineWidth',1');
-%     plot(t, rho_infty*ones(sample_size,1),'-.r','LineWidth',1.5');
-%     plot(t, -rho_infty*ones(sample_size,1),'-.r','LineWidth',1.5');
-% %     ylim([-rho_infty*6 rho_infty*6])
-%     xlim([0 sample_size*0.001])
-%     xlabel('time[s]', 'FontSize', 10)
-%     ylabel("z_{"+i+ "}[rad]", 'FontSize', 10);
-%     grid on;
-%     legend('z')
-% end
-% saveas(gcf,"fig\z_result.png");
+saveas(gcf,"fig\"+file_name+"_u_result.png");
 
 % B matrix Test noise
-figure(4)
+figure(3)
 tiledlayout(2,1,'TileSpacing','Compact','Padding','Compact');
 set(gcf,'color','w');
 hold off;
@@ -164,7 +161,7 @@ hold on;
 plot(t,AA2,':k','LineWidth',1.5');
 plot(t,AA3,':k','LineWidth',1.5');
 plot(t,1-AA4,':k','LineWidth',1.5');
-% plot(t,AAE(1,:),':k','LineWidth',1.5');
-% plot(t,AAE(2,:),':k','LineWidth',1.5');
+xlabel('time(s)', 'FontSize', 10)
+ylabel("Err", 'FontSize', 10);
 grid on;
-
+saveas(gcf,"fig\"+file_name+"_e_result.png");
