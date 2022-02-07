@@ -5,16 +5,16 @@
 % Last Updated: Feb, 07, 2022
 % 
 % -------------------------------------------------
-% 
-%
+% Comparison of input from robot manipulator due to computational error 
+% for MATLAB inverse function.
 % -------------------------------------------------
 %
-% the following code has been tested on bar_kappaatlab 2021a
+% the following code has been tested on MATLAB 2021a
 %%
 clc; clear all;
 addpath(genpath('.'));
 
-inverse_type = 4;
+inverse_type = 1;
 if inverse_type == 1
     % using inverse function
     file_name = "1.inv";
@@ -111,8 +111,9 @@ for i=1:sample_size
     end
 end
 
-mean(Ur(:,i)-U(:,i),2)
-
+mean(abs(Ur-U),2)
+AA = [mean(abs(1-AA1)) mean(abs(AA2)); mean(abs(AA3)) mean(abs(1-AA4))]
+mean(AA(:))
 % plot
 % figure 1 : q
 figure(1)
