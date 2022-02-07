@@ -14,20 +14,21 @@
 clc; clear all;
 addpath(genpath('.'));
 
-%
-inverse_type = 1;
+inverse_type = 4;
 if inverse_type == 1
     % using inverse function
     file_name = "1.inv";
 elseif inverse_type == 2
     % using Moore-Penrose pseudoinverse function
-    file_name = "2.pinv"; 
+    file_name = "2.pinv";
+    ptol = 1e-14; % singular value tolerance 1e-14
 elseif inverse_type == 3
     % using mldivide, mrdivide function
-    file_name = "3.ml/mr-divide"; 
+    file_name = "3.mlr-divide"; 
 elseif inverse_type == 4
     % using round, mldivide, mrdivide function
-    file_name = "4.ml/mr-divide-round";
+    file_name = "4.mlr-divide-round";
+    tol =14; % number of digits to the nearest multiple of 10-N.
 elseif inverse_type == 0
     % nothing
     file_name = "0";
@@ -86,12 +87,10 @@ for i=1:sample_size
     if inverse_type == 1
         B = inv(ups_m*inv(M))*(ups_m*inv(M));
     elseif inverse_type == 2
-        ptol = 1e-14; % pinv function singular value tolerance 1e-14 
         B = pinv(ups_m*pinv(M,ptol),ptol)*(ups_m*pinv(M,ptol));
     elseif inverse_type == 3
         B = (ups_m/(M))\(ups_m/M);
     elseif inverse_type == 4
-        tol =14; % round function 1e-14
         B = round((round(ups_m/M,tol))\(round(ups_m/M,tol)),tol);
     elseif inverse_type == 0
         B = eye(2);
@@ -110,7 +109,6 @@ for i=1:sample_size
     if i ~= sample_size
         x(:,i+1) = next_state;
     end
-    rho_table(i) = rho;
 end
 
 mean(Ur(:,i)-U(:,i),2)
