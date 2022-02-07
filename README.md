@@ -5,13 +5,21 @@
 
 Comparison of input from robot manipulator due to computational error for MATLAB inverse function.
 [0] : identity matrix
+
 [1] : inverse matrix
+
 (https://kr.mathworks.com/help/matlab/ref/inv.html)
+
 [2] : Moore-Penrose pseudoinverse function 
+
 (https://kr.mathworks.com/help/matlab/ref/pinv.html)
+
 [3] : mldivide, mrdivide function
+
 (https://kr.mathworks.com/help/matlab/ref/mldivide.html)
+
 (https://kr.mathworks.com/help/matlab/ref/mrdivide.html)
+
 [4] : round, mldivide, mrdivide function
 
 
@@ -36,7 +44,7 @@ Comparison of input from robot manipulator due to computational error for MATLAB
 | (1,2)  |   1e-00\*0.0   |   1e-16\*0.1   |   1e-15\*0.2   |   1e-17\*0.8   |   1e-00\*0.0   |
 | (1,3)  |   1e-00\*0.0   |   1e-15\*0.5   |   1e-14\*0.4   |   1e-15\*0.1   |   1e-00\*0.0   |
 | (1,4)  |   1e-00\*0.0   |   1e-16\*0.6   |   1e-15\*0.6   |   1e-16\*0.1   |   1e-00\*0.0   |
-|  mean  | **1e-00\*0.0** | **1e-15\*0.2** | **1e-14\*0.2** | **1e-16\*0.5** | **1e-00\*0.0** |
+|  mean  |   1e-00\*0.0   |   1e-15\*0.2   |   1e-14\*0.2   | **1e-16\*0.5** |   1e-00\*0.0   |
 
 
 ## result figures
